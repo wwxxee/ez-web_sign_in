@@ -211,6 +211,11 @@ if __name__ == "__main__":
     logger.info(f"ez - web 脚本初始化成功，任务已设定，将在每天北京时间 09:00 执行。当前时间: {datetime.now(beijing_tz).strftime('%Y-%m-%d %H:%M:%S')}")
     notifier.get_dingding("脚本初始化成功", f"ez - web 脚本初始化成功 <br/> 任务已设定，将在每天北京时间 09:00 执行。当前时间: {datetime.now(beijing_tz).strftime('%Y-%m-%d %H:%M:%S')}")
     notifier.get_mail("ez - web 脚本初始化成功", f"ez - web 脚本初始化成功 <br/> 任务已设定，将在每天北京时间 09:00 执行。当前时间: {datetime.now(beijing_tz).strftime('%Y-%m-%d %H:%M:%S')}")
+    
+    # 首次启动时立即执行一次签到任务
+    logger.info("脚本首次启动，立即执行一次签到任务...")
+    job()
+    logger.info("首次签到任务执行完成，开始等待定时任务...")
 
     while True:
         schedule.run_pending()
