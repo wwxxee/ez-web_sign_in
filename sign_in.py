@@ -8,6 +8,10 @@ from datetime import datetime
 import pytz
 from dark_log import DarkLog
 from push_ddmail import Dingdingmail
+from apscheduler.schedulers.blocking import BlockingScheduler
+
+
+
 logger = DarkLog('ez-web_sign_in')
 notifier = Dingdingmail('ez-web_sign_in')
 class AutoQiandao:
@@ -203,25 +207,44 @@ def job():
     qiandao_task.run()
 
 if __name__ == "__main__":
-    # 使用APScheduler设置定时任务
-    from apscheduler.schedulers.blocking import BlockingScheduler
-    
+    # 初始化调度器，强制使用北京时间（UTC+8）
     scheduler = BlockingScheduler(timezone='Asia/Shanghai')
-    
-    @scheduler.scheduled_job('cron', hour=9, minute=0)
+
+
+    @scheduler.scheduled_job('cron', hour=9, minute=0, timezone='Asia/Shanghai')  # 显式指定时区
     def scheduled_job():
-        job()
-    
-    logger.info(f"ez - web 脚本初始化成功，任务已设定，将在每天北京时间 09:00 执行。当前时间: {datetime.now(pytz.timezone('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M:%S')}")
-    notifier.get_dingding("脚本初始化成功", f"ez - web 脚本初始化成功 <br/> 任务已设定，将在每天北京时间 09:00 执行。当前时间: {datetime.now(pytz.timezone('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M:%S')}")
-    notifier.get_mail("ez - web 脚本初始化成功", f"ez - web 脚本初始化成功 <br/> 任务已设定，将在每天北京时间 09:00 执行。当前时间: {datetime.now(pytz.timezone('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M:%S')}")
-    
-    # 首次启动时立即执行一次签到任务
+        try:
+            job()
+        except Exception as e:
+            logger.error(f"定时任务执行失败: {e}")
+            notifier.get_dingding("定时任务执行失败", f"任务执行失败: {e}")
+            notifier.get_mail("定时任务执行失败", f"任务执行失败: {e}")
+
+
+    # 获取当前北京时间（避免服务器时区影响）
+    beijing_time = datetime.now(pytz.timezone('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M:%S')
+
+    logger.info(f"ez - web 脚本初始化成功，任务已设定，将在每天北京时间 09:00 执行。当前时间: {beijing_time}")
+    notifier.get_dingding("脚本初始化成功",
+                          f"ez - web 脚本初始化成功 <br/> 任务已设定，将在每天北京时间 09:00 执行。当前时间: {beijing_time}")
+    notifier.get_mail("ez - web 脚本初始化成功",
+                      f"ez - web 脚本初始化成功 <br/> 任务已设定，将在每天北京时间 09:00 执行。当前时间: {beijing_time}")
+
+    # 首次启动立即执行
     logger.info("脚本首次启动，立即执行一次签到任务...")
-    job()
+    try:
+        job()
+    except Exception as e:
+        logger.error(f"首次任务执行失败: {e}")
+        notifier.get_dingding("首次任务执行失败", f"首次任务执行失败: {e}")
+        notifier.get_mail("首次任务执行失败", f"首次任务执行失败: {e}")
     logger.info("首次签到任务执行完成，开始等待定时任务...")
-    
-    scheduler.start()
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
+
+    # 启动调度器，并处理退出信号
+    try:
+        scheduler.start()
+    except (KeyboardInterrupt, SystemExit):
+        scheduler.shutdown()
+        logger.info("定时任务已停止")
+        notifier.get_dingding("定时任务已停止", "定时任务已停止")
+        notifier.get_mail("定时任务已停止", "定时任务已停止")
