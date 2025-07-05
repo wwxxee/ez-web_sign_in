@@ -114,7 +114,7 @@ class AutoQiandao:
             if data.get("status") == 200:
                 logger.info("签到成功！")
                 self.results.append("签到成功！")
-            if data.get("status") == 400 and data.get("message") == "签到失败" and data.get("data") == "今天已经签到过了":
+            elif data.get("status") == 400 and data.get("message") == "签到失败" and data.get("data") == "今天已经签到过了":
                 message = data.get('message', '未知错误')
                 data = data.get('data', '')
                 logger.error(f"错误: {message}，信息: {data}")
