@@ -169,8 +169,8 @@ class AutoQiandao:
                         self.check_in(auth_token)
                         self.get_points(auth_token)
                         success = True
-                        logger.info(f"第 {retry_count} 次尝试成功！")
-                        self.results.append(f"第 {retry_count} 次尝试成功！")
+                        logger.info(f"验证码识别：第 {retry_count} 次尝试成功！")
+                        self.results.append(f"验证码识别：第 {retry_count} 次尝试成功！")
                         break
                     else:
                         logger.warning(f"第 {retry_count} 次登录失败，准备重试...")
