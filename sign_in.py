@@ -203,20 +203,25 @@ def job():
     qiandao_task.run()
 
 if __name__ == "__main__":
-    # 设置时区为北京时间
-    beijing_tz = pytz.timezone('Asia/Shanghai')
+    # 使用APScheduler设置定时任务
+    from apscheduler.schedulers.blocking import BlockingScheduler
     
-    # 设定任务在每天早上9点执行
-    schedule.every().day.at("09:00").do(job)
-    logger.info(f"ez - web 脚本初始化成功，任务已设定，将在每天北京时间 09:00 执行。当前时间: {datetime.now(beijing_tz).strftime('%Y-%m-%d %H:%M:%S')}")
-    notifier.get_dingding("脚本初始化成功", f"ez - web 脚本初始化成功 <br/> 任务已设定，将在每天北京时间 09:00 执行。当前时间: {datetime.now(beijing_tz).strftime('%Y-%m-%d %H:%M:%S')}")
-    notifier.get_mail("ez - web 脚本初始化成功", f"ez - web 脚本初始化成功 <br/> 任务已设定，将在每天北京时间 09:00 执行。当前时间: {datetime.now(beijing_tz).strftime('%Y-%m-%d %H:%M:%S')}")
+    scheduler = BlockingScheduler(timezone='Asia/Shanghai')
+    
+    @scheduler.scheduled_job('cron', hour=9, minute=0)
+    def scheduled_job():
+        job()
+    
+    logger.info(f"ez - web 脚本初始化成功，任务已设定，将在每天北京时间 09:00 执行。当前时间: {datetime.now(pytz.timezone('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M:%S')}")
+    notifier.get_dingding("脚本初始化成功", f"ez - web 脚本初始化成功 <br/> 任务已设定，将在每天北京时间 09:00 执行。当前时间: {datetime.now(pytz.timezone('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M:%S')}")
+    notifier.get_mail("ez - web 脚本初始化成功", f"ez - web 脚本初始化成功 <br/> 任务已设定，将在每天北京时间 09:00 执行。当前时间: {datetime.now(pytz.timezone('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M:%S')}")
     
     # 首次启动时立即执行一次签到任务
     logger.info("脚本首次启动，立即执行一次签到任务...")
     job()
     logger.info("首次签到任务执行完成，开始等待定时任务...")
-
+    
+    scheduler.start()
     while True:
         schedule.run_pending()
         time.sleep(1)
