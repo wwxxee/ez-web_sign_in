@@ -74,11 +74,11 @@ class AutoQiandao:
                 return captcha_answer
             else:
                 logger.error(f"验证码识别失败: {data.get('msg')}")
-                self.results.append(f"验证码识别失败: {data.get('msg')}")
+                # self.results.append(f"验证码识别失败: {data.get('msg')}")
                 return None
         except Exception as e:
             logger.exception(f"请求验证码识别时发生错误: {e}")
-            self.results.append(f"请求验证码识别时发生错误: {e}")
+            # self.results.append(f"请求验证码识别时发生错误: {e}")
             return None
 
     def login(self, captcha_id, captcha_answer):
@@ -170,6 +170,7 @@ class AutoQiandao:
                         self.get_points(auth_token)
                         success = True
                         logger.info(f"第 {retry_count} 次尝试成功！")
+                        self.results.append(f"第 {retry_count} 次尝试成功！")
                         break
                     else:
                         logger.warning(f"第 {retry_count} 次登录失败，准备重试...")
@@ -190,7 +191,7 @@ class AutoQiandao:
             self.results.append(error_msg)
         
         # 发送通知
-        summary_title = f"M-SEC 签到报告 - {self.username}"
+        summary_title = f"M-SEC 签到 - {self.username}"
         summary_content = "\n\n".join(self.results)
         notifier.get_dingding(summary_title, summary_content)
         notifier.get_mail(summary_title, summary_content.replace("\n\n", "<br>"))
