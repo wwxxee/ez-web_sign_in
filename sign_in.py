@@ -18,7 +18,7 @@ class AutoQiandao:
     def __init__(self, username, password, yunma_token):
         self.username = username
         self.password = password
-        self.results = []
+        self.results = ["<br/>"]
         self.max_retries = 3  # 最大重试次数
 
         # M-SEC 网站的 URL
@@ -95,8 +95,8 @@ class AutoQiandao:
             data = response.json()
             if data.get("status") == 200:
                 token = data["data"]["token"]
-                logger.info("web登录成功！")
-                self.results.append("web登录成功！")
+                logger.info("-------> web登录成功！")
+                self.results.append("-------> web登录成功！")
                 return token
             else:
                 logger.error(f"登录失败: {data}")
