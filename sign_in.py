@@ -18,7 +18,7 @@ class AutoQiandao:
     def __init__(self, username, password, yunma_token):
         self.username = username
         self.password = password
-        self.results = ["<br/>"]
+        self.results = []
         self.max_retries = 3  # 最大重试次数
 
         # M-SEC 网站的 URL
