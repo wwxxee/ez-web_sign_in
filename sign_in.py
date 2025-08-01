@@ -164,6 +164,7 @@ class AutoQiandao:
             if captcha_id and captcha_base64:
                 captcha_answer = self.recognize_captcha(captcha_base64)
                 if captcha_answer:
+                    time.sleep(2)
                     auth_token = self.login(captcha_id, captcha_answer)
                     if auth_token:
                         self.check_in(auth_token)
